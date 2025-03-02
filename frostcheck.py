@@ -12,10 +12,10 @@ load_dotenv()
 
 # define variables
 
-weatherAPIUrl = "https://api.weather.gov/gridpoints/ILN/39,55/forecast"
-coldThreshold = 40
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+weatherAPIUrl = "https://api.weather.gov/gridpoints/" + os.getenv("office") + "/" + os.getenv("gridx") + ","+ os.getenv("gridy") + "/forecast"
+coldThreshold = 40
 
 # define functions
 

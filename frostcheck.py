@@ -24,10 +24,12 @@ def getWeatherData():
     return response.json()
 
 def getTonightsLowTemp(weatherData):
-    lowTemp = 70
+    lowTemp = 999
     for period in weatherData['properties']['periods']:
         if "Tonight" in period['name']:
             lowTemp = period['temperature']
+    if lowTemp == 999:
+        sendTextMessage("Check the temperature tonight to see if plants need brought in!  There was an error, no low temperature was found for tonight from the NOAA API.")
     return lowTemp
 
 def sendTextMessage(message):

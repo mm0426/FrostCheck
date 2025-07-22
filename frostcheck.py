@@ -3,6 +3,9 @@
 
 import requests
 import os
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from dotenv import load_dotenv
 from pathlib import Path  # python3 only
 
@@ -12,8 +15,11 @@ load_dotenv()
 
 # define variables
 
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
-TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS")
+EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
+SMTP_SERVER = os.getenv("SMTP_SERVER")
+SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
+SMS_EMAIL = os.getenv("SMS_EMAIL")  # recipient's SMS gateway email (e.g., 1234567890@txt.att.net)
 weatherAPIUrl = "https://api.weather.gov/gridpoints/" + os.getenv("office") + "/" + os.getenv("gridx") + ","+ os.getenv("gridy") + "/forecast"
 coldThreshold = int(os.getenv("coldThreshold"))
 
@@ -33,8 +39,30 @@ def getTonightsLowTemp(weatherData):
     return lowTemp
 
 def sendTextMessage(message):
-    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage?chat_id={TELEGRAM_CHAT_ID}&text={message}"
-    print(requests.get(url).json())
+    try:
+        # Create message
+        msg = MIMEMultipart()
+        msg['From'] = EMAIL_ADDRESS
+        msg['To'] = SMS_EMAIL
+        msg['Subject'] = "FrostCheck Alert"
+        
+        # Add body to email
+        msg.attach(MIMEText(message, 'plain'))
+        
+        # Create SMTP session
+        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+        server.starttls()  # Enable security
+        server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
+        
+        # Send email
+        text = msg.as_string()
+        server.sendmail(EMAIL_ADDRESS, SMS_EMAIL, text)
+        server.quit()
+        
+        print(f"SMS sent successfully to {SMS_EMAIL}")
+        
+    except Exception as e:
+        print(f"Error sending SMS: {str(e)}")
 
 # main program
 
